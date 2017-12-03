@@ -836,6 +836,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
 		strncmp(str_governor, "performance", DEVFREQ_NAME_LEN) &&
 		strncmp(str_governor, "powersave", DEVFREQ_NAME_LEN) &&
 		strncmp(str_governor, "mem_latency", DEVFREQ_NAME_LEN) &&
+		strncmp(str_governor, "simple_ondemand", DEVFREQ_NAME_LEN) &&
 		strncmp(str_governor, "msm-adreno-tz", DEVFREQ_NAME_LEN))
 		return -EINVAL;
 
@@ -1092,6 +1093,33 @@ static ssize_t trans_stat_show(struct device *dev,
 }
 static DEVICE_ATTR_RO(trans_stat);
 
+static ssize_t time_in_state_show(struct device *dev, struct device_attribute *attr,
+				char *buf)
+{
+	struct devfreq *devfreq = to_devfreq(dev);
+	ssize_t len;
+	int i, err;
+	unsigned int max_state = devfreq->profile->max_state;
+
+	err = devfreq_update_status(devfreq, devfreq->previous_freq);
+	if (err)
+		return 0;
+
+	len = 0;
+	
+	for (i = 0; i < max_state; i++) {
+		len += sprintf(buf + len, "%u ",
+				devfreq->profile->freq_table[i]);
+		len += sprintf(buf + len, "%u ",
+			jiffies_to_msecs(devfreq->time_in_state[i]));
+	}
+
+	len += sprintf(buf + len, "\n");
+	
+	return len;
+}
+static DEVICE_ATTR_RO(time_in_state);
+
 static struct attribute *devfreq_attrs[] = {
 	&dev_attr_governor.attr,
 	&dev_attr_available_governors.attr,
@@ -1102,6 +1130,7 @@ static struct attribute *devfreq_attrs[] = {
 	&dev_attr_min_freq.attr,
 	&dev_attr_max_freq.attr,
 	&dev_attr_trans_stat.attr,
+	&dev_attr_time_in_state.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(devfreq);
