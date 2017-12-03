@@ -12,12 +12,12 @@ CL_BLUE="\033[01;34m"
 
 # Resources
 THREAD="-j$(nproc --all)"
-DEFCONFIG="radioactive_defconfig"
+DEFCONFIG="tr-core_defconfig"
 KERNEL="Image.gz-dtb"
 
 # Radioactive Kernel Details
-KERNEL_NAME="~Radioactive-Reborn"
-INCREMENTAL_VERSION="V1.0.4"
+KERNEL_NAME="TR-Core"
+INCREMENTAL_VERSION="R1"
 export LOCALVERSION="${KERNEL_NAME}-${INCREMENTAL_VERSION}"
 DEVICE="oneplus3-3T"
 FINAL_VER="${KERNEL_NAME}-${DEVICE}-${INCREMENTAL_VERSION}"
@@ -25,13 +25,13 @@ FINAL_VER="${KERNEL_NAME}-${DEVICE}-${INCREMENTAL_VERSION}"
 # Vars
 export ARCH=arm64
 export SUBARCH=arm64
-export KBUILD_BUILD_USER=acuicultor
-export KBUILD_BUILD_HOST=NuclearPowerPlant
+export KBUILD_BUILD_USER=TR
+export KBUILD_BUILD_HOST=Thomas_R
 
 # Paths
 WORKING_DIR=$(pwd)
-ANYKERNEL_DIR="${HOME}/android/kernels/AnyKernel2"
-TOOLCHAIN_DIR="${HOME}/Android/toolchains/aarch64-linux-gnu-kernel-linaro-7.x/"
+ANYKERNEL_DIR="/media/thomas_r/Daten1/Android/Kernel/AnyKernel2"
+TOOLCHAIN_DIR="/media/thomas_r/Daten1/Android/Kernel/toolchains/aarch64-linux-gnu-linaro/"
 REPACK_DIR="${ANYKERNEL_DIR}"
 OUT_DIR="${WORKING_DIR}/out/"
 ZIP_MOVE="${WORKING_DIR}/zips/"
