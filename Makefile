@@ -248,8 +248,8 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
 # "make" in the configured kernel build directory always uses that.
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-ARCH		      := arm64
-SUBARCH		   := arm64
+ARCH		:= arm64
+SUBARCH		:= arm64
 CROSS_COMPILE	:= /media/thomas_r/Daten1/Android/Kernel/toolchains/aarch64-linux-gnu-linaro/bin/aarch64-linux-gnu-
 
 # Architecture as present in compile.h
@@ -297,7 +297,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 
 # TR Optimization #
-
++
 # Graphite
 GRAPHITE	:= -fgraphite -fgraphite-identity -floop-nest-optimize -ftree-loop-distribution -ftree-loop-distribute-patterns
 
@@ -308,14 +308,13 @@ EXTRA_OPTS	:= -falign-functions=1 -falign-loops=1 -falign-jumps=1 -falign-labels
             -fsched-pressure -fsched-spec-load \
             -fno-prefetch-loop-arrays -fpredictive-commoning \
             -fvect-cost-model=dynamic -fsimd-cost-model=dynamic \
-            -ftree-partial-pre
                  
 				
 # Arm Architecture Specific
 # fall back to -march=armv8-a in case the compiler isn't compatible
 # with -mcpu and -mtune
-ARM_ARCH_OPT := $(call cc-option,-march=armv8.1-a+crc+lse,) -mcpu=cortex-a57+crc+crypto+fp+simd \
-                                --param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=512 \
+ARM_ARCH_OPT := $(call cc-option,-march=armv8-a) -mcpu=cortex-a57+crc+crypto+fp+simd \
+				--param l1-cache-line-size=64 --param l1-cache-size=32 --param l2-cache-size=512
 
 # Optional
 GEN_OPT_FLAGS := \
@@ -382,8 +381,7 @@ include $(srctree)/scripts/Kbuild.include
 # Make variables (CC, etc...)
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld --strip-debug
-CC	   = $(CROSS_COMPILE)gcc -g0
-CPP	= $(CC) -E -fdeclone-ctor-dtor -flto -fuse-linker-plugin
+CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
 STRIP		= $(CROSS_COMPILE)strip
@@ -399,11 +397,11 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   = 
-AFLAGS_MODULE   =
+CFLAGS_MODULE   = $(CFLAGS_KERNEL) -flto
+AFLAGS_MODULE   = $(CFLAGS_KERNEL) -flto
 LDFLAGS_MODULE  = --strip-debug
-CFLAGS_KERNEL	= $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) 
-AFLAGS_KERNEL	= $(CFLAGS_KERNEL) -flto -fuse-linker-plugin -r
+CFLAGS_KERNEL	= $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS)
+AFLAGS_KERNEL	= $(CFLAGS_KERNEL)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 CFLAGS_KCOV	= -fsanitize-coverage=trace-pc
 
@@ -427,12 +425,19 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		             -fno-strict-aliasing -fno-common \
-		             -Werror-implicit-function-declaration \
-		             -Wno-format-security \
-		             -std=gnu89 \
-                   -mcpu=cortex-a57 -mtune=cortex-a57 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) \
+KBUILD_CFLAGS   := -Werror -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+		   -fno-strict-aliasing -fno-common \
+		   -Werror-implicit-function-declaration \
+		   -Wno-format-security \
+		   -fgcse-sm -fsched-spec-load \
+		   -fsingle-precision-constant \
+		   -std=gnu89 \
+		   -Wno-memset-transposed-args -Wno-bool-compare -Wno-logical-not-parentheses -Wno-parentheses -Wno-discarded-array-qualifiers \
+		   -Wno-bool-operation -Wno-int-in-bool-context -Wno-switch-unreachable \
+		   -Wno-unused-const-variable -Wno-array-bounds -Wno-incompatible-pointer-types -Wno-misleading-indentation -Wno-tautological-compare -Wno-error=misleading-indentation
+		   
+# Optimization for Kryo
+KBUILD_CFLAGS	+= -mcpu=cortex-a57 -mtune=cortex-a57 $(GEN_OPT_FLAGS) $(ARM_ARCH_OPT) $(EXTRA_OPTS) $(GRAPHITE) \
 
 # Kryo doesn't need 835769/843419 erratum fixes.
 # Some toolchains enable those fixes automatically, so opt-out.
